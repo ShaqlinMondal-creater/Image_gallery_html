@@ -5,16 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Image Gallery</title>
     <style>
+        /* Styling for the gallery */
         body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f4f4f4;
+            font-family: 'Neuropol', sans-serif;
         }
-        h1 {
-            text-align: center;
-            margin-bottom: 20px;
-        }
+
         .gallery-thumbnails {
             display: flex;
             flex-wrap: wrap;
@@ -53,17 +48,21 @@
         }
         .gallery-view {
             display: none;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 20px;
+            flex-direction: column;
+            align-items: center;
             padding-top: 20px;
+        }
+        .gallery-view .images {
+            display: flex;
+            justify-content: center;
+            flex-wrap: nowrap;
+            gap: 20px;
         }
         .gallery-view img {
             width: 150px;
             height: 150px;
             object-fit: cover;
             border-radius: 10px;
-            margin-top: 20px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.2);
             cursor: pointer;
             transition: transform 0.3s ease;
@@ -71,18 +70,6 @@
         .gallery-view img:hover {
             transform: scale(1.05);
         }
-        .back-button {
-            display: block;
-            margin: 20px auto;
-            padding: 10px 20px;
-            background-color: #333;
-            color: #fff;
-            text-align: center;
-            border-radius: 5px;
-            cursor: pointer;
-            width: 100px;
-        }
-        /* Modal Styling */
         .modal {
             display: none;
             position: fixed;
@@ -129,11 +116,29 @@
             color: white;
             cursor: pointer;
         }
+        /* Back Button */
+        .back-button {
+            margin: 20px 0;
+            padding: 10px 20px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100px;
+        }
+        /* Hide header when modal is visible */
+        header.hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
 
-    <h1>Image Gallery</h1>
+    <!-- This is your header -->
+    <!--<header>-->
+    <!--    <h1>This is the Header</h1>-->
+    <!--</header>-->
 
     <!-- Gallery Thumbnails -->
     <div class="gallery-thumbnails">
@@ -151,11 +156,11 @@
         </div>
     </div>
 
-    <!-- Back Button -->
-    <div id="backButton" class="back-button" onclick="showThumbnails()">Back</div>
-
     <!-- Gallery View -->
-    <div id="galleryView" class="gallery-view"></div>
+    <div id="galleryView" class="gallery-view">
+        <div class="images" id="imageContainer"></div>
+        <div id="backButton" class="back-button" onclick="showThumbnails()">Back</div>
+    </div>
 
     <!-- Modal for viewing image in full-screen with features -->
     <div id="imageModal" class="modal">
@@ -167,6 +172,7 @@
     </div>
 
     <script>
+        // Scoped to gallery only, no effect on other elements
         const galleries = {
             1: [
                 { src: 'https://picsum.photos/500', details: 'This is an amazing image from Gallery 1.' },
@@ -188,12 +194,11 @@
         let modalVisible = false;
 
         function showGallery(galleryNumber) {
-            const galleryView = document.getElementById('galleryView');
-            const backButton = document.getElementById('backButton');
-            galleryView.innerHTML = '';
+            const imageContainer = document.getElementById('imageContainer');
+            imageContainer.innerHTML = '';
 
             // Loop through gallery images and create image elements with click to open modal
-            galleries[galleryNumber].forEach((imageData, index) => {
+            galleries[galleryNumber].forEach((imageData) => {
                 const img = document.createElement('img');
                 img.src = imageData.src;
                 img.alt = `Gallery ${galleryNumber} Image`;
@@ -201,13 +206,12 @@
                     showModal(imageData);
                 };
 
-                galleryView.appendChild(img);
+                imageContainer.appendChild(img);
             });
 
             // Hide thumbnails and show gallery
             document.querySelector('.gallery-thumbnails').style.display = 'none';
-            backButton.style.display = 'block';
-            galleryView.style.display = 'flex';
+            document.getElementById('galleryView').style.display = 'flex';
         }
 
         function showModal(imageData) {
@@ -218,6 +222,9 @@
             modalImage.src = imageData.src;
             modalDetails.innerText = imageData.details;
 
+            // Hide header when modal is shown
+            document.querySelector('header').classList.add('hidden');
+
             modal.style.display = 'flex';
             modalVisible = true;
         }
@@ -225,21 +232,22 @@
         function toggleModal() {
             const modal = document.getElementById('imageModal');
             if (modalVisible) {
-                modal.style.display = 'none';
-                modalVisible = false;
+                closeModal();
             }
         }
 
         function closeModal() {
             document.getElementById('imageModal').style.display = 'none';
             modalVisible = false;
+
+            // Show header when modal is closed
+            document.querySelector('header').classList.remove('hidden');
         }
 
         function showThumbnails() {
             // Show thumbnails and hide gallery
             document.querySelector('.gallery-thumbnails').style.display = 'flex';
             document.getElementById('galleryView').style.display = 'none';
-            document.getElementById('backButton').style.display = 'none';
         }
     </script>
 
