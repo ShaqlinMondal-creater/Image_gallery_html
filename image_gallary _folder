@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Gallery</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .gallery-thumbnails {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+        }
+        .gallery-thumbnails .thumbnail {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+        }
+        .gallery-thumbnails .thumbnail:hover {
+            transform: scale(1.05);
+        }
+        .gallery-thumbnails img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+        .gallery-thumbnails .title {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            text-align: center;
+            padding: 10px;
+            font-size: 16px;
+        }
+        .gallery-view {
+            display: none;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            padding-top: 20px;
+        }
+        .gallery-view img {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-top: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        .gallery-view img:hover {
+            transform: scale(1.05);
+        }
+        .back-button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100px;
+        }
+        /* Modal Styling */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+        }
+        .modal-content {
+            position: relative;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 800px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+        .modal-content img {
+            width: 100%;
+            height: auto;
+            max-height: 500px;
+            object-fit: contain;
+            margin-bottom: 15px;
+            cursor: pointer;
+        }
+        .modal-content .image-details {
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            font-size: 16px;
+            color: #555;
+        }
+        .modal .close {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Image Gallery</h1>
+
+    <!-- Gallery Thumbnails -->
+    <div class="gallery-thumbnails">
+        <div class="thumbnail" onclick="showGallery(1)">
+            <img src="https://picsum.photos/200/300" alt="Gallery 1">
+            <div class="title">Gallery 1</div>
+        </div>
+        <div class="thumbnail" onclick="showGallery(2)">
+            <img src="https://picsum.photos/200/300" alt="Gallery 2">
+            <div class="title">Gallery 2</div>
+        </div>
+        <div class="thumbnail" onclick="showGallery(3)">
+            <img src="https://picsum.photos/200/300" alt="Gallery 3">
+            <div class="title">Gallery 3</div>
+        </div>
+    </div>
+
+    <!-- Back Button -->
+    <div id="backButton" class="back-button" onclick="showThumbnails()">Back</div>
+
+    <!-- Gallery View -->
+    <div id="galleryView" class="gallery-view"></div>
+
+    <!-- Modal for viewing image in full-screen with features -->
+    <div id="imageModal" class="modal">
+        <div class="modal-content" id="modalContent">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <img id="modalImage" src="" alt="Full View" onclick="toggleModal()">
+            <div class="image-details" id="modalDetails"></div>
+        </div>
+    </div>
+
+    <script>
+        const galleries = {
+            1: [
+                { src: 'https://picsum.photos/500', details: 'This is an amazing image from Gallery 1.' },
+                { src: 'https://picsum.photos/500', details: 'Another beautiful image from Gallery 1.' },
+                { src: 'https://picsum.photos/500', details: 'Yet another fantastic image from Gallery 1.' }
+            ],
+            2: [
+                { src: 'https://picsum.photos/500', details: 'Image from Gallery 2 with rich details.' },
+                { src: 'https://picsum.photos/500', details: 'Another striking image from Gallery 2.' }
+            ],
+            3: [
+                { src: 'https://picsum.photos/500', details: 'Stunning view from Gallery 3.' },
+                { src: 'https://picsum.photos/500', details: 'An image from Gallery 3 with vivid colors.' },
+                { src: 'https://picsum.photos/500', details: 'This image has great contrast from Gallery 3.' },
+                { src: 'https://picsum.photos/500', details: 'Last image from Gallery 3, full of depth.' }
+            ]
+        };
+
+        let modalVisible = false;
+
+        function showGallery(galleryNumber) {
+            const galleryView = document.getElementById('galleryView');
+            const backButton = document.getElementById('backButton');
+            galleryView.innerHTML = '';
+
+            // Loop through gallery images and create image elements with click to open modal
+            galleries[galleryNumber].forEach((imageData, index) => {
+                const img = document.createElement('img');
+                img.src = imageData.src;
+                img.alt = `Gallery ${galleryNumber} Image`;
+                img.onclick = function() {
+                    showModal(imageData);
+                };
+
+                galleryView.appendChild(img);
+            });
+
+            // Hide thumbnails and show gallery
+            document.querySelector('.gallery-thumbnails').style.display = 'none';
+            backButton.style.display = 'block';
+            galleryView.style.display = 'flex';
+        }
+
+        function showModal(imageData) {
+            const modal = document.getElementById('imageModal');
+            const modalImage = document.getElementById('modalImage');
+            const modalDetails = document.getElementById('modalDetails');
+
+            modalImage.src = imageData.src;
+            modalDetails.innerText = imageData.details;
+
+            modal.style.display = 'flex';
+            modalVisible = true;
+        }
+
+        function toggleModal() {
+            const modal = document.getElementById('imageModal');
+            if (modalVisible) {
+                modal.style.display = 'none';
+                modalVisible = false;
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('imageModal').style.display = 'none';
+            modalVisible = false;
+        }
+
+        function showThumbnails() {
+            // Show thumbnails and hide gallery
+            document.querySelector('.gallery-thumbnails').style.display = 'flex';
+            document.getElementById('galleryView').style.display = 'none';
+            document.getElementById('backButton').style.display = 'none';
+        }
+    </script>
+
+</body>
+</html>
