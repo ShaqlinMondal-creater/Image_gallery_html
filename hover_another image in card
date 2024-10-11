@@ -1,24 +1,29 @@
-<a href="{{ $product_url ?? '#' }}" class="d-block h-100">
-            <img class="lazyload mx-auto img-fit has-transition hover-img"
-                src="{{ get_image($product->thumbnail ?? 'assets/img/placeholder.jpg') }}" 
-                title="{{ $product->getTranslation('name') ?? 'Product' }}"
-                onerror="this.onerror=null;this.src='{{ static_asset('assets/img/placeholder.jpg') }}';"
-                data-hover-src="https://ahd-display.com/public/uploads/all/CNy4XXfGVX6EnT5fEdDaM6Ls2YWf3U0l3AmPKHGg.jpg
-                    {{-- @if(isset($product->photos[1]) && $product->photos[1] != $product->thumbnail)
-                        {{ get_image($product->photos[1]) }}  
-                    @else
-                        {{ get_image($product->thumbnail) }}  
-                    @endif --}}
-                ">
+        <a href="{{ $product_url }}" class="d-block h-100"> 
+            <img 
+                class="lazyload mx-auto img-fit has-transition" 
+                src="{{ get_image($product->thumbnail) }}" 
+                alt="{{ $product->getTranslation('name') }}" 
+                title="{{ $product->getTranslation('name') }}"
+                onmouseover="this.src='{{ get_hover_image($product) }}'"
+                onmouseout="this.src='{{ get_image($product->thumbnail) }}'"
+                onerror="this.onerror=null;this.src='{{ static_asset('assets/img/placeholder.jpg') }}';"> 
         </a>
-        
-        
-        <style>
-            .hover-img {
-                transition: all 0.3s ease;
-            }
-            
-            .hover-img:hover {
-                content: url('{{ get_image($product->hover_image) }}'); /* This changes the image on hover */
-            }
-        </style>
+
+<script>
+    document.querySelectorAll('.product-image').forEach(function (el) {
+    const img = el.querySelector('img');
+    const originalSrc = img.src;
+    const hoverSrc = img.getAttribute('data-hover');
+
+    el.addEventListener('mouseenter', function () {
+        if (hoverSrc) {
+            img.src = hoverSrc;
+        }
+    });
+
+    el.addEventListener('mouseleave', function () {
+        img.src = originalSrc;
+    });
+});
+
+</script>
